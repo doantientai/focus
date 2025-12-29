@@ -8,6 +8,9 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Google Font: Press Start 2P -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -70,6 +73,8 @@
         const CheckCircle = (props) => <IconWrapper {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></IconWrapper>;
         const AlertCircle = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></IconWrapper>;
         const ExternalLink = (props) => <IconWrapper {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></IconWrapper>;
+        const Palette = (props) => <IconWrapper {...props}><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></IconWrapper>;
+        const Droplet = (props) => <IconWrapper {...props}><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></IconWrapper>;
 
         // --- App Data ---
         const QUOTES = [
@@ -82,11 +87,95 @@
         ];
 
         const BACKGROUNDS = {
-            morning: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=80&w=2070&auto=format&fit=crop",
-            afternoon: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=1974&auto=format&fit=crop",
-            evening: "https://images.unsplash.com/photo-1472120435266-53112dc2de39?q=80&w=1974&auto=format&fit=crop",
-            night: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=80&w=2013&auto=format&fit=crop",
-            break: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=2073&auto=format&fit=crop" 
+            morning: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=100&w=2070&auto=format&fit=crop",
+            afternoon: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=100&w=1974&auto=format&fit=crop",
+            evening: "https://images.unsplash.com/photo-1472120435266-53112dc2de39?q=100&w=1974&auto=format&fit=crop",
+            night: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=100&w=2013&auto=format&fit=crop",
+            break: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=100&w=2073&auto=format&fit=crop" 
+        };
+
+        const THEME_BACKGROUNDS = {
+            retro: "https://images.unsplash.com/photo-1595495711373-a356a1db2590?q=100&w=2070", // Cyberpunk/Grid
+            circle: "https://images.unsplash.com/photo-1518066000714-58c45f1a2c0a?q=100&w=2070", // Zen Fog/Mist
+            pixel: "https://images.unsplash.com/photo-1633421878925-ac220d8f6e4f?q=100&w=2080" // Erth
+        };
+
+        // --- Timer Component ---
+        const TimerDisplay = ({ style, timeLeft, duration }) => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+            // --- PIXEL / 8-BIT STYLE ---
+            if (style === 'pixel') {
+                const progress = (timeLeft / duration) * 100;
+                let barColor = 'bg-green-500';
+                if (progress < 50) barColor = 'bg-yellow-500';
+                if (progress < 20) barColor = 'bg-red-500';
+
+                return (
+                    <div className="flex flex-col items-center gap-6" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                         {/* Health Bar Container */}
+                         <div className="w-64 md:w-96 h-8 border-4 border-white bg-gray-800 relative shadow-lg">
+                            {/* "HP" Text Label */}
+                            <div className="absolute -left-12 top-1 text-white text-xs font-bold drop-shadow-md">HP</div>
+                            {/* Fill */}
+                            <div 
+                                className={`h-full ${barColor} transition-all duration-1000`} 
+                                style={{ width: `${progress}%` }}
+                            ></div>
+                         </div>
+                         
+                         {/* Time Text */}
+                        <div className="text-4xl md:text-5xl text-white mt-2 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-widest">
+                            {timeStr}
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- RETRO STYLE ---
+            if (style === 'retro') {
+                return (
+                    <div className="font-mono text-[6rem] md:text-[8rem] text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)] tabular-nums tracking-wider">
+                        {timeStr}
+                    </div>
+                );
+            }
+
+            // --- ZEN CIRCLE STYLE ---
+            if (style === 'circle') {
+                const radius = 120;
+                const circumference = 2 * Math.PI * radius;
+                const progress = timeLeft / duration;
+                const dashoffset = circumference * (1 - progress);
+                
+                return (
+                    <div className="relative flex items-center justify-center mb-8 mt-4">
+                        <svg width="320" height="320" className="transform -rotate-90">
+                            {/* Background Circle */}
+                            <circle cx="160" cy="160" r={radius} stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" />
+                            {/* Progress Circle */}
+                            <circle 
+                                cx="160" cy="160" r={radius} 
+                                stroke="white" strokeWidth="8" fill="transparent" 
+                                strokeDasharray={circumference} 
+                                strokeDashoffset={dashoffset} 
+                                className="transition-all duration-1000 ease-linear" 
+                                strokeLinecap="round" 
+                            />
+                        </svg>
+                        <div className="absolute text-5xl md:text-6xl font-light tracking-wider">{timeStr}</div>
+                    </div>
+                );
+            }
+
+            // Default: Minimal
+            return (
+                <div className="text-[8rem] md:text-[10rem] leading-none font-thin tabular-nums tracking-tighter drop-shadow-2xl">
+                    {timeStr}
+                </div>
+            );
         };
 
         // --- Main Component ---
@@ -103,6 +192,10 @@
             // Custom Time State
             const [customMins, setCustomMins] = useState('');
 
+            // Timer Design State
+            const [timerStyle, setTimerStyle] = useState('minimal'); // minimal, retro, circle, pixel
+            const [isBlurred, setIsBlurred] = useState(false); // New Blur State
+
             // Focus Guard State
             const [wasPausedByHide, setWasPausedByHide] = useState(false);
             
@@ -117,15 +210,44 @@
                 isActiveRef.current = isActive;
             }, [isActive]);
 
+            // Background Logic: Respond to Time OR Style
             useEffect(() => {
-                const hour = new Date().getHours();
-                if (hour < 12) setBgImage(BACKGROUNDS.morning);
-                else if (hour < 17) setBgImage(BACKGROUNDS.afternoon);
-                else if (hour < 20) setBgImage(BACKGROUNDS.evening);
-                else setBgImage(BACKGROUNDS.night);
+                const updateBackground = () => {
+                    // 1. Check for specific style overrides first
+                    if (timerStyle === 'retro') {
+                        setBgImage(THEME_BACKGROUNDS.retro);
+                        return;
+                    }
+                    if (timerStyle === 'circle') {
+                        setBgImage(THEME_BACKGROUNDS.circle);
+                        return;
+                    }
+                    if (timerStyle === 'pixel') {
+                        setBgImage(THEME_BACKGROUNDS.pixel);
+                        return;
+                    }
+
+                    // 2. Fallback to Mode/Time based (Minimal Style)
+                    if (mode === 'break') {
+                        setBgImage(BACKGROUNDS.break);
+                    } else {
+                        const hour = new Date().getHours();
+                        if (hour < 12) setBgImage(BACKGROUNDS.morning);
+                        else if (hour < 17) setBgImage(BACKGROUNDS.afternoon);
+                        else if (hour < 20) setBgImage(BACKGROUNDS.evening);
+                        else setBgImage(BACKGROUNDS.night);
+                    }
+                };
                 
-                const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-                setQuote(randomQuote);
+                updateBackground();
+                
+                // Set random quote only on mount (not on style change)
+            }, [timerStyle, mode]);
+
+            // Initial Mount Quote
+            useEffect(() => {
+                 const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+                 setQuote(randomQuote);
             }, []);
 
             useEffect(() => {
@@ -220,14 +342,10 @@
                     setMode('break');
                     setDuration(5 * 60);
                     setTimeLeft(5 * 60);
-                    setBgImage(BACKGROUNDS.break);
+                    // Force background refresh to break mode if using minimal style
+                    if (timerStyle === 'minimal') setBgImage(BACKGROUNDS.break);
                 } else {
                     setMode('setup');
-                    const hour = new Date().getHours();
-                    if (hour < 12) setBgImage(BACKGROUNDS.morning);
-                    else if (hour < 17) setBgImage(BACKGROUNDS.afternoon);
-                    else if (hour < 20) setBgImage(BACKGROUNDS.evening);
-                    else setBgImage(BACKGROUNDS.night);
                 }
             };
 
@@ -236,177 +354,221 @@
                 setWasPausedByHide(false);
             };
 
-            const formatTime = (seconds) => {
-                const m = Math.floor(seconds / 60);
-                const s = seconds % 60;
-                return `${m}:${s < 10 ? '0' : ''}${s}`;
+            const cycleStyle = () => {
+                setTimerStyle(prev => {
+                    if (prev === 'minimal') return 'retro';
+                    if (prev === 'retro') return 'circle';
+                    if (prev === 'circle') return 'pixel';
+                    return 'minimal';
+                });
             };
 
             return (
-                <div className="relative min-h-screen w-full text-white overflow-hidden transition-all duration-1000"
-                     style={{
-                       backgroundImage: `url(${bgImage})`,
-                       backgroundSize: 'cover',
-                       backgroundPosition: 'center'
-                     }}>
-                  
-                  {/* Overlay */}
-                  <div className={`absolute inset-0 bg-black transition-opacity duration-1000 ${mode === 'focus' ? 'bg-opacity-60' : 'bg-opacity-40'}`}></div>
-
-                  {/* Main UI */}
-                  <div className="relative z-10 flex flex-col items-center justify-between min-h-screen p-8">
+                <div className="relative min-h-screen w-full text-white overflow-hidden">
                     
-                    {/* Top Bar */}
-                    <div className="w-full flex justify-between items-center">
-                      <div className="flex items-center gap-2 font-semibold tracking-widest text-sm uppercase opacity-80">
-                        <CheckCircle size={18} />
-                        <span>Focus & Flow</span>
-                      </div>
-                      
-                      {/* MyNoise Link */}
-                      <div className="flex items-center gap-4">
-                         <a 
-                            href="https://mynoise.net/NoiseMachines/rainNoiseGenerator.php" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-all text-sm font-medium border border-white/10"
-                         >
-                            <span>Open MyNoise 🌧️</span>
-                            <ExternalLink size={14} className="opacity-70" />
-                         </a>
-                      </div>
-                    </div>
+                    {/* Background Layer (Separated for Blur Effect) */}
+                    <div 
+                        className={`absolute inset-0 transition-all duration-1000 transform ${isBlurred ? 'blur-md scale-105' : 'blur-0 scale-100'}`}
+                        style={{
+                            backgroundImage: `url(${bgImage})`,
+                            backgroundSize: 'cover',
+                            backgroundPosition: 'center'
+                        }}
+                    ></div>
+                    
+                    {/* Dark Overlay */}
+                    <div className={`absolute inset-0 bg-black transition-opacity duration-1000 ${mode === 'focus' ? 'bg-opacity-60' : 'bg-opacity-40'}`}></div>
 
-                    {/* Central Content */}
-                    <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center">
-                      
-                      {mode === 'setup' && (
-                        <div className="animate-fade-in flex flex-col items-center gap-8 w-full">
-                          <h1 className="text-4xl md:text-5xl font-light mb-4 drop-shadow-lg">What is your main focus?</h1>
-                          
-                          <input 
-                            type="text" 
-                            value={task}
-                            onChange={(e) => setTask(e.target.value)}
-                            placeholder="e.g., Finish the report" 
-                            className="w-full bg-transparent border-b-2 border-white/30 text-center text-3xl md:text-4xl py-4 focus:outline-none focus:border-white transition-colors placeholder-white/30 font-light text-white"
-                            autoFocus
-                          />
+                    {/* Main UI */}
+                    <div className="relative z-10 flex flex-col items-center justify-between min-h-screen p-8">
+                        
+                        {/* Top Bar */}
+                        <div className="w-full flex justify-between items-center">
+                        <div className="flex items-center gap-2 font-semibold tracking-widest text-sm uppercase opacity-80">
+                            <CheckCircle size={18} />
+                            <span>Focus & Flow</span>
+                        </div>
+                        
+                        {/* MyNoise Link */}
+                        <div className="flex items-center gap-4">
+                            <a 
+                                href="https://mynoise.net/NoiseMachines/rainNoiseGenerator.php" 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-all text-sm font-medium border border-white/10"
+                            >
+                                <span>Open MyNoise 🌧️</span>
+                                <ExternalLink size={14} className="opacity-70" />
+                            </a>
+                        </div>
+                        </div>
 
-                          <div className="flex flex-wrap justify-center gap-4 mt-8 items-center">
-                            {[25, 45, 60].map((mins) => (
-                                <button 
-                                    key={mins}
-                                    onClick={() => {
-                                        setDuration(mins * 60);
-                                        setCustomMins('');
-                                    }}
-                                    className={`px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 transition-all ${duration === mins * 60 && customMins === '' ? 'bg-white text-black hover:bg-white' : ''}`}
-                                >
-                                    {mins}m
-                                </button>
-                            ))}
+                        {/* Central Content */}
+                        <div className="flex flex-col items-center justify-center w-full max-w-2xl text-center">
+                        
+                        {mode === 'setup' && (
+                            <div className="animate-fade-in flex flex-col items-center gap-8 w-full">
+                            <h1 className="text-4xl md:text-5xl font-light mb-4 drop-shadow-lg">What is your main focus?</h1>
                             
-                            {/* Custom Timer Input */}
-                            <div className="relative group">
-                                <input 
-                                    type="number" 
-                                    placeholder="Custom"
-                                    min="1"
-                                    value={customMins}
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setCustomMins(val);
-                                        if (val > 0) setDuration(val * 60);
-                                    }}
-                                    className={`w-28 bg-transparent border rounded-full px-4 py-3 text-center focus:outline-none focus:border-white transition-colors ${customMins !== '' ? 'border-white bg-white/10' : 'border-white/20'}`}
-                                />
-                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none">m</span>
+                            <input 
+                                type="text" 
+                                value={task}
+                                onChange={(e) => setTask(e.target.value)}
+                                placeholder="e.g., Finish the report" 
+                                className="w-full bg-transparent border-b-2 border-white/30 text-center text-3xl md:text-4xl py-4 focus:outline-none focus:border-white transition-colors placeholder-white/30 font-light text-white"
+                                autoFocus
+                            />
+
+                            {/* Time Selection */}
+                            <div className="flex flex-wrap justify-center gap-4 mt-6 items-center">
+                                {[25, 45, 60].map((mins) => (
+                                    <button 
+                                        key={mins}
+                                        onClick={() => {
+                                            setDuration(mins * 60);
+                                            setCustomMins('');
+                                        }}
+                                        className={`px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 transition-all ${duration === mins * 60 && customMins === '' ? 'bg-white text-black hover:bg-white' : ''}`}
+                                    >
+                                        {mins}m
+                                    </button>
+                                ))}
+                                
+                                <div className="relative group">
+                                    <input 
+                                        type="number" 
+                                        placeholder="Custom"
+                                        min="1"
+                                        value={customMins}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setCustomMins(val);
+                                            if (val > 0) setDuration(val * 60);
+                                        }}
+                                        className={`w-28 bg-transparent border rounded-full px-4 py-3 text-center focus:outline-none focus:border-white transition-colors ${customMins !== '' ? 'border-white bg-white/10' : 'border-white/20'}`}
+                                    />
+                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs opacity-50 pointer-events-none">m</span>
+                                </div>
                             </div>
-                          </div>
 
-                          <button 
-                            onClick={handleStartFocus}
-                            disabled={!task}
-                            className="mt-8 group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full text-xl font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
-                          >
-                            Start Focus <Play size={20} className="fill-current" />
-                          </button>
-                        </div>
-                      )}
+                            {/* Timer Style Selection */}
+                            <div className="mt-4 flex flex-col items-center gap-3">
+                                <span className="text-xs uppercase tracking-widest opacity-50">Timer Style</span>
+                                <div className="flex gap-3">
+                                    {['minimal', 'retro', 'circle', 'pixel'].map(s => (
+                                    <button 
+                                        key={s} 
+                                        onClick={() => setTimerStyle(s)}
+                                        className={`px-4 py-2 rounded-full border text-sm capitalize transition-all ${timerStyle === s ? 'bg-white text-black border-white' : 'border-white/20 hover:bg-white/10'}`}
+                                    >
+                                        {s}
+                                    </button>
+                                    ))}
+                                </div>
+                            </div>
 
-                      {mode !== 'setup' && (
-                        <div className="animate-fade-in flex flex-col items-center gap-6">
-                           <div className="text-sm uppercase tracking-[0.3em] opacity-80 mb-4">
-                              {mode === 'focus' ? 'Focus Mode' : 'Break Time'}
-                           </div>
+                            <button 
+                                onClick={handleStartFocus}
+                                disabled={!task}
+                                className="mt-8 group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full text-xl font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
+                            >
+                                Start Focus <Play size={20} className="fill-current" />
+                            </button>
+                            </div>
+                        )}
 
-                           <div className="text-[8rem] md:text-[10rem] leading-none font-thin tabular-nums tracking-tighter drop-shadow-2xl">
-                              {formatTime(timeLeft)}
-                           </div>
+                        {mode !== 'setup' && (
+                            <div className="animate-fade-in flex flex-col items-center gap-6">
+                            <div className="text-sm uppercase tracking-[0.3em] opacity-80 mb-4">
+                                {mode === 'focus' ? 'Focus Mode' : 'Break Time'}
+                            </div>
 
-                           <div className="text-2xl md:text-3xl font-light opacity-90 max-w-xl break-words">
-                              {mode === 'focus' ? task : "Take a deep breath."}
-                           </div>
+                            {/* Render Timer based on Style */}
+                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} />
 
-                           <div className="flex items-center gap-6 mt-12">
-                              <button 
-                                onClick={() => setIsActive(!isActive)}
-                                className="p-4 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10"
-                              >
-                                {isActive ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
-                              </button>
-                              
-                              {mode === 'focus' ? (
-                                  <button 
-                                    onClick={handleTimerComplete}
-                                    className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-sm font-medium tracking-wide"
-                                  >
-                                    FINISH EARLY
-                                  </button>
-                              ) : (
-                                  <button 
-                                    onClick={() => {
-                                        setMode('setup');
-                                        setIsActive(false);
-                                        setTask('');
-                                    }}
-                                    className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-sm font-medium tracking-wide"
-                                  >
-                                    NEW SESSION
-                                  </button>
-                              )}
-                           </div>
-                        </div>
-                      )}
+                            <div className="text-2xl md:text-3xl font-light opacity-90 max-w-xl break-words mt-4">
+                                {mode === 'focus' ? task : "Take a deep breath."}
+                            </div>
 
-                      {/* Penalty Modal */}
-                      {wasPausedByHide && !isActive && (
-                         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
-                            <div className="bg-white/10 border border-white/20 p-8 rounded-2xl max-w-md text-center shadow-2xl">
-                                <AlertCircle size={48} className="mx-auto text-amber-400 mb-4" />
-                                <h2 className="text-2xl font-bold mb-2">Distraction Detected!</h2>
-                                <p className="opacity-80 mb-6">You left the focus window. The timer was paused to help you stay disciplined.</p>
+                            <div className="flex items-center gap-6 mt-12">
                                 <button 
-                                    onClick={handleResume}
-                                    className="bg-white text-black px-8 py-3 rounded-full font-medium hover:scale-105 transition-transform"
+                                    onClick={() => setIsActive(!isActive)}
+                                    className="p-4 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10"
                                 >
-                                    Resume Session
+                                    {isActive ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
                                 </button>
+                                
+                                {mode === 'focus' ? (
+                                    <button 
+                                        onClick={handleTimerComplete}
+                                        className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-sm font-medium tracking-wide"
+                                    >
+                                        FINISH EARLY
+                                    </button>
+                                ) : (
+                                    <button 
+                                        onClick={() => {
+                                            setMode('setup');
+                                            setIsActive(false);
+                                            setTask('');
+                                        }}
+                                        className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-sm font-medium tracking-wide"
+                                    >
+                                        NEW SESSION
+                                    </button>
+                                )}
                             </div>
-                         </div>
-                      )}
+                            </div>
+                        )}
 
-                    </div>
+                        {/* Penalty Modal */}
+                        {wasPausedByHide && !isActive && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in">
+                                <div className="bg-white/10 border border-white/20 p-8 rounded-2xl max-w-md text-center shadow-2xl">
+                                    <AlertCircle size={48} className="mx-auto text-amber-400 mb-4" />
+                                    <h2 className="text-2xl font-bold mb-2">Distraction Detected!</h2>
+                                    <p className="opacity-80 mb-6">You left the focus window. The timer was paused to help you stay disciplined.</p>
+                                    <button 
+                                        onClick={handleResume}
+                                        className="bg-white text-black px-8 py-3 rounded-full font-medium hover:scale-105 transition-transform"
+                                    >
+                                        Resume Session
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
-                    {/* Bottom Bar */}
-                    <div className="w-full flex justify-center items-end h-20">
-                        <div className="text-center max-w-lg">
-                            <p className="text-lg italic font-light drop-shadow-md">"{quote}"</p>
                         </div>
-                    </div>
 
-                  </div>
+                        {/* Bottom Right Floating Controls */}
+                        <div className="absolute bottom-8 right-8 z-40 flex gap-4">
+                            {/* Blur Toggle (Always visible) */}
+                            <button 
+                                onClick={() => setIsBlurred(!isBlurred)}
+                                className={`bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full p-4 transition-all shadow-lg hover:scale-105 border border-white/10 group ${isBlurred ? 'bg-white/30 border-white' : ''}`}
+                                title="Toggle Blur"
+                            >
+                                <Droplet size={24} className={`opacity-70 group-hover:opacity-100 ${isBlurred ? 'fill-current' : ''}`} />
+                            </button>
+
+                            {/* Style Toggle (Always visible) */}
+                            <button 
+                                onClick={cycleStyle}
+                                className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full p-4 transition-all shadow-lg hover:scale-105 border border-white/10 group"
+                                title="Change Timer Style"
+                            >
+                                <Palette size={24} className="opacity-70 group-hover:opacity-100" />
+                            </button>
+                        </div>
+
+                        {/* Bottom Bar (Quote) */}
+                        <div className="w-full flex justify-center items-end h-20">
+                            <div className="text-center max-w-lg">
+                                <p className="text-lg italic font-light drop-shadow-md">"{quote}"</p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             );
         }
