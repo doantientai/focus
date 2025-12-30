@@ -86,10 +86,6 @@
         ];
 
         const BACKGROUNDS = {
-            morning: "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?q=100&w=2070&auto=format&fit=crop",
-            afternoon: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=100&w=1974&auto=format&fit=crop",
-            evening: "https://images.unsplash.com/photo-1472120435266-53112dc2de39?q=100&w=1974&auto=format&fit=crop",
-            night: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=100&w=2013&auto=format&fit=crop",
             break: "images/themes/pixel/hero_vs_dragon/winning.png"
         };
 
@@ -97,11 +93,12 @@
             dragon_initial: 'images/themes/pixel/hero_vs_dragon/background.png',
             dragon_phase1: 'images/themes/pixel/hero_vs_dragon/blocking.png',
             dragon_phase2: 'images/themes/pixel/hero_vs_dragon/attacking.png',
-            dragon_phase3: 'images/themes/pixel/hero_vs_dragon/winning.png'
+            dragon_phase3: 'images/themes/pixel/hero_vs_dragon/winning.png',
+            dragon_relax: 'images/themes/pixel/hero_vs_dragon/relax.png'
         };
 
         // --- Timer Component ---
-        const TimerDisplay = ({ style, timeLeft, duration, mode, setBgImage }) => {
+        const TimerDisplay = ({ timeLeft, duration, mode, setBgImage }) => {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
@@ -116,10 +113,12 @@
                 else if (progress >= 90) phase = 2;
 
                  useEffect(() => {
-                    if (phase === 3) setBgImage(THEME_BACKGROUNDS.dragon_phase3);
-                    else if (phase === 2) setBgImage(THEME_BACKGROUNDS.dragon_phase2);
-                    else setBgImage(THEME_BACKGROUNDS.dragon_phase1);
-                }, [phase]);
+                    if (mode === 'focus') {
+                        if (phase === 3) setBgImage(THEME_BACKGROUNDS.dragon_phase3);
+                        else if (phase === 2) setBgImage(THEME_BACKGROUNDS.dragon_phase2);
+                        else setBgImage(THEME_BACKGROUNDS.dragon_phase1);
+                    }
+                }, [phase, mode]);
 
                 if (phase === 3) {
                     return (
@@ -160,14 +159,12 @@
             const [duration, setDuration] = useState(25 * 60); 
             const [timeLeft, setTimeLeft] = useState(25 * 60);
             const [isActive, setIsActive] = useState(false);
-            const [bgImage, setBgImage] = useState(BACKGROUNDS.morning);
+            const [bgImage, setBgImage] = useState(THEME_BACKGROUNDS.dragon_initial);
             const [quote, setQuote] = useState(QUOTES[0]);
             
             // Custom Time State
             const [customMins, setCustomMins] = useState('');
 
-            // Timer Design State
-            const [timerStyle, setTimerStyle] = useState('dragon');
             const [isBlurred, setIsBlurred] = useState(false); // New Blur State
 
             // Focus Guard State
@@ -187,28 +184,15 @@
             // Background Logic: Respond to Time OR Style
             useEffect(() => {
                 const updateBackground = () => {
-                    // 1. Check for specific style overrides first
-                   if (timerStyle === 'dragon') {
-                       setBgImage(THEME_BACKGROUNDS.dragon_initial);
-                       return;
-                   }
-
-                    // 2. Fallback to Mode/Time based (Minimal Style)
-                    if (mode === 'break') {
+                    if (mode === 'setup') {
+                        setBgImage(THEME_BACKGROUNDS.dragon_initial);
+                    } else if (mode === 'break') {
                         setBgImage(BACKGROUNDS.break);
-                    } else {
-                        const hour = new Date().getHours();
-                        if (hour < 12) setBgImage(BACKGROUNDS.morning);
-                        else if (hour < 17) setBgImage(BACKGROUNDS.afternoon);
-                        else if (hour < 20) setBgImage(BACKGROUNDS.evening);
-                        else setBgImage(BACKGROUNDS.night);
                     }
                 };
                 
                 updateBackground();
-                
-                // Set random quote only on mount (not on style change)
-            }, [timerStyle, mode]);
+            }, [mode]);
 
             // Initial Mount Quote
             useEffect(() => {
@@ -273,6 +257,12 @@
                     document.title = `${timeString} - ${mode === 'break' ? 'Break' : 'Focus'}`;
                 }
             }, [timeLeft, mode]);
+            
+            useEffect(() => {
+                if (isActive && mode === 'break') {
+                    setBgImage(THEME_BACKGROUNDS.dragon_relax);
+                }
+            }, [isActive, mode]);
 
             // --- Handlers ---
             const handleStartFocus = async () => {
@@ -308,8 +298,6 @@
                     setMode('break');
                     setDuration(5 * 60);
                     setTimeLeft(5 * 60);
-                    // Force background refresh to break mode if using minimal style
-                    if (timerStyle === 'minimal') setBgImage(BACKGROUNDS.break);
                 } else {
                     setMode('setup');
                 }
@@ -364,7 +352,7 @@
                                     <CheckCircle size={18} />
                                     <span>Focus & Flow</span>
                                 </div>
-                                {timerStyle === 'dragon' && mode === 'focus' && <HealthBar percentage={heroHealth} label="Hero HP" />}
+                                {mode === 'focus' && <HealthBar percentage={heroHealth} label="Hero HP" />}
                             </div>
                             
                             <div className="flex flex-col items-end" style={{ fontFamily: '"Press Start 2P", monospace' }}>
@@ -377,7 +365,7 @@
                                     <span>Open MyNoise 🌧️</span>
                                     <ExternalLink size={14} className="opacity-70" />
                                 </a>
-                                {timerStyle === 'dragon' && mode === 'focus' && <HealthBar percentage={dragonHealth} label="Dragon HP" />}
+                                {mode === 'focus' && <HealthBar percentage={dragonHealth} label="Dragon HP" />}
                             </div>
                         </div>
 
@@ -447,7 +435,7 @@
                             </div>
 
                             {/* Render Timer based on Style */}
-                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} mode={mode} setBgImage={setBgImage} />
+                            <TimerDisplay timeLeft={timeLeft} duration={duration} mode={mode} setBgImage={setBgImage} />
 
                             <div className="text-2xl md:text-3xl font-light opacity-90 max-w-xl break-words mt-4">
                                 {mode === 'focus' ? task : "Take a deep breath."}
