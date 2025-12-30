@@ -101,27 +101,42 @@
         };
 
         // --- Timer Component ---
-        const TimerDisplay = ({ style, timeLeft, duration }) => {
+        const TimerDisplay = ({ style, timeLeft, duration, mode }) => {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
             // --- PIXEL / 8-BIT STYLE ---
             if (style === 'pixel') {
-                const progress = (timeLeft / duration) * 100;
+                // In break mode, the bar fills up (restores). Otherwise, it depletes.
+                const isBreak = mode === 'break';
+                const progress = isBreak
+                    ? ((duration - timeLeft) / duration) * 100
+                    : (timeLeft / duration) * 100;
+
                 let barColor = 'bg-green-500';
-                if (progress < 50) barColor = 'bg-yellow-500';
-                if (progress < 20) barColor = 'bg-red-500';
+                
+                if (isBreak) {
+                    // Restoring: Starts red, goes to green
+                    if (progress < 50) barColor = 'bg-red-500';
+                    else if (progress < 80) barColor = 'bg-yellow-500';
+                } else {
+                    // Depleting: Starts green, goes to red
+                    if (progress < 50) barColor = 'bg-yellow-500';
+                    if (progress < 20) barColor = 'bg-red-500';
+                }
 
                 return (
                     <div className="flex flex-col items-center gap-6" style={{ fontFamily: '"Press Start 2P", monospace' }}>
-                         {/* Health Bar Container */}
+                         {/* Health/Restore Bar Container */}
                          <div className="w-64 md:w-96 h-8 border-4 border-white bg-gray-800 relative shadow-lg">
-                            {/* "HP" Text Label */}
-                            <div className="absolute -left-12 top-1 text-white text-xs font-bold drop-shadow-md">HP</div>
+                            {/* "HP" or "RP" Text Label */}
+                            <div className="absolute -left-12 top-1 text-white text-xs font-bold drop-shadow-md">
+                                {isBreak ? 'RP' : 'HP'}
+                            </div>
                             {/* Fill */}
-                            <div 
-                                className={`h-full ${barColor} transition-all duration-1000`} 
+                            <div
+                                className={`h-full ${barColor} transition-all duration-1000`}
                                 style={{ width: `${progress}%` }}
                             ></div>
                          </div>
@@ -484,7 +499,7 @@
                             </div>
 
                             {/* Render Timer based on Style */}
-                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} />
+                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} mode={mode} />
 
                             <div className="text-2xl md:text-3xl font-light opacity-90 max-w-xl break-words mt-4">
                                 {mode === 'focus' ? task : "Take a deep breath."}
