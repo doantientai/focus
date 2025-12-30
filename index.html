@@ -97,11 +97,15 @@
         const THEME_BACKGROUNDS = {
             retro: "https://images.unsplash.com/photo-1595495711373-a356a1db2590?q=100&w=2070", // Cyberpunk/Grid
             circle: "https://images.unsplash.com/photo-1518066000714-58c45f1a2c0a?q=100&w=2070", // Zen Fog/Mist
-            pixel: "https://images.unsplash.com/photo-1633421878925-ac220d8f6e4f?q=100&w=2080" // Erth
+            pixel: "https://images.unsplash.com/photo-1633421878925-ac220d8f6e4f?q=100&w=2080", // Erth
+            dragon_initial: 'images/themes/pixel/hero_vs_dragon/background.png',
+            dragon_phase1: 'images/themes/pixel/hero_vs_dragon/blocking.png',
+            dragon_phase2: 'images/themes/pixel/hero_vs_dragon/attacking.png',
+            dragon_phase3: 'images/themes/pixel/hero_vs_dragon/winning.png'
         };
 
         // --- Timer Component ---
-        const TimerDisplay = ({ style, timeLeft, duration, mode }) => {
+        const TimerDisplay = ({ style, timeLeft, duration, mode, setBgImage }) => {
             const minutes = Math.floor(timeLeft / 60);
             const seconds = timeLeft % 60;
             const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
@@ -147,6 +151,73 @@
                         </div>
                     </div>
                 );
+            }
+
+            // --- DRAGON'S DEMISE STYLE ---
+            if (style === 'dragon') {
+                const HealthBar = ({ percentage, label, side }) => {
+                    const barColor = percentage > 50 ? 'bg-green-500' : percentage > 20 ? 'bg-yellow-500' : 'bg-red-500';
+                    const isRight = side === 'right';
+                    return (
+                        <div className={`w-48 md:w-64 h-6 border-2 border-white bg-gray-800 relative shadow-lg ${isRight ? 'ml-auto' : 'mr-auto'}`}>
+                            <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
+                            <div className={`absolute -top-6 text-xs uppercase tracking-widest ${isRight ? 'right-0' : 'left-0'}`}>{label}</div>
+                        </div>
+                    );
+                };
+
+                const DragonDemiseDisplay = () => {
+                    const elapsed = duration - timeLeft;
+                    const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
+
+                    let phase = 1;
+                    let heroHealth = 100;
+                    let dragonHealth = 100;
+
+                    if (timeLeft <= 0) {
+                        phase = 3; // Victory
+                        heroHealth = 10;
+                        dragonHealth = 0;
+                    } else if (progress >= 90) {
+                        phase = 2; // Counterattack
+                        heroHealth = 10;
+                        const phaseProgress = (progress - 90) / 10; // 0 to 1
+                        dragonHealth = 100 * (1 - phaseProgress);
+                    } else {
+                        phase = 1; // The Stand
+                        const phaseProgress = progress / 90; // 0 to 1
+                        heroHealth = 100 - (90 * phaseProgress);
+                    }
+                    
+                    useEffect(() => {
+                        if (phase === 3) setBgImage(THEME_BACKGROUNDS.dragon_phase3);
+                        else if (phase === 2) setBgImage(THEME_BACKGROUNDS.dragon_phase2);
+                        else setBgImage(THEME_BACKGROUNDS.dragon_phase1);
+                    }, [phase]);
+
+                    if (phase === 3) {
+                        return (
+                            <div className="flex flex-col items-center justify-center text-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                                <h1 className="text-6xl md:text-8xl text-amber-400 drop-shadow-[6px_6px_0_rgba(0,0,0,1)]">VICTORY!</h1>
+                                <p className="text-xl md:text-2xl mt-6 text-white drop-shadow-[3px_3px_0_rgba(0,0,0,1)]">Time for a well-earned break.</p>
+                            </div>
+                        );
+                    }
+
+                    return (
+                        <div className="w-full h-full flex flex-col justify-between items-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                            <div className="w-full flex justify-between items-start px-4">
+                                <HealthBar percentage={heroHealth} label="Hero HP" side="left" />
+                                <HealthBar percentage={dragonHealth} label="Dragon HP" side="right" />
+                            </div>
+                            <div className="text-6xl md:text-8xl text-white mt-2 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-widest">
+                                {timeStr}
+                            </div>
+                            <div className="h-16"></div>
+                        </div>
+                    );
+                };
+                return <DragonDemiseDisplay />;
             }
 
             // --- RETRO STYLE ---
@@ -208,7 +279,7 @@
             const [customMins, setCustomMins] = useState('');
 
             // Timer Design State
-            const [timerStyle, setTimerStyle] = useState('minimal'); // minimal, retro, circle, pixel
+            const [timerStyle, setTimerStyle] = useState('minimal'); // minimal, retro, circle, pixel, dragon
             const [isBlurred, setIsBlurred] = useState(false); // New Blur State
 
             // Focus Guard State
@@ -241,6 +312,10 @@
                         setBgImage(THEME_BACKGROUNDS.pixel);
                         return;
                     }
+                   if (timerStyle === 'dragon') {
+                       setBgImage(THEME_BACKGROUNDS.dragon_initial);
+                       return;
+                   }
 
                     // 2. Fallback to Mode/Time based (Minimal Style)
                     if (mode === 'break') {
@@ -374,6 +449,7 @@
                     if (prev === 'minimal') return 'retro';
                     if (prev === 'retro') return 'circle';
                     if (prev === 'circle') return 'pixel';
+                    if (prev === 'pixel') return 'dragon';
                     return 'minimal';
                 });
             };
@@ -470,7 +546,7 @@
                             <div className="mt-4 flex flex-col items-center gap-3">
                                 <span className="text-xs uppercase tracking-widest opacity-50">Timer Style</span>
                                 <div className="flex gap-3">
-                                    {['minimal', 'retro', 'circle', 'pixel'].map(s => (
+                                    {['minimal', 'retro', 'circle', 'pixel', 'dragon'].map(s => (
                                     <button 
                                         key={s} 
                                         onClick={() => setTimerStyle(s)}
@@ -499,7 +575,7 @@
                             </div>
 
                             {/* Render Timer based on Style */}
-                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} mode={mode} />
+                            <TimerDisplay style={timerStyle} timeLeft={timeLeft} duration={duration} mode={mode} setBgImage={setBgImage} />
 
                             <div className="text-2xl md:text-3xl font-light opacity-90 max-w-xl break-words mt-4">
                                 {mode === 'focus' ? task : "Take a deep breath."}
