@@ -73,7 +73,6 @@
         const CheckCircle = (props) => <IconWrapper {...props}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></IconWrapper>;
         const AlertCircle = (props) => <IconWrapper {...props}><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></IconWrapper>;
         const ExternalLink = (props) => <IconWrapper {...props}><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></IconWrapper>;
-        const Palette = (props) => <IconWrapper {...props}><circle cx="13.5" cy="6.5" r=".5"></circle><circle cx="17.5" cy="10.5" r=".5"></circle><circle cx="8.5" cy="7.5" r=".5"></circle><circle cx="6.5" cy="12.5" r=".5"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></IconWrapper>;
         const Droplet = (props) => <IconWrapper {...props}><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></IconWrapper>;
 
         // --- App Data ---
@@ -91,13 +90,10 @@
             afternoon: "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=100&w=1974&auto=format&fit=crop",
             evening: "https://images.unsplash.com/photo-1472120435266-53112dc2de39?q=100&w=1974&auto=format&fit=crop",
             night: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?q=100&w=2013&auto=format&fit=crop",
-            break: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=100&w=2073&auto=format&fit=crop" 
+            break: "images/themes/pixel/hero_vs_dragon/winning.png"
         };
 
         const THEME_BACKGROUNDS = {
-            retro: "https://images.unsplash.com/photo-1595495711373-a356a1db2590?q=100&w=2070", // Cyberpunk/Grid
-            circle: "https://images.unsplash.com/photo-1518066000714-58c45f1a2c0a?q=100&w=2070", // Zen Fog/Mist
-            pixel: "https://images.unsplash.com/photo-1633421878925-ac220d8f6e4f?q=100&w=2080", // Erth
             dragon_initial: 'images/themes/pixel/hero_vs_dragon/background.png',
             dragon_phase1: 'images/themes/pixel/hero_vs_dragon/blocking.png',
             dragon_phase2: 'images/themes/pixel/hero_vs_dragon/attacking.png',
@@ -110,156 +106,48 @@
             const seconds = timeLeft % 60;
             const timeStr = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
 
-            // --- PIXEL / 8-BIT STYLE ---
-            if (style === 'pixel') {
-                // In break mode, the bar fills up (restores). Otherwise, it depletes.
-                const isBreak = mode === 'break';
-                const progress = isBreak
-                    ? ((duration - timeLeft) / duration) * 100
-                    : (timeLeft / duration) * 100;
+            // --- DRAGON'S DEMISE STYLE ---
+            const DragonDemiseDisplay = () => {
+                const elapsed = duration - timeLeft;
+                const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
 
-                let barColor = 'bg-green-500';
-                
-                if (isBreak) {
-                    // Restoring: Starts red, goes to green
-                    if (progress < 50) barColor = 'bg-red-500';
-                    else if (progress < 80) barColor = 'bg-yellow-500';
-                } else {
-                    // Depleting: Starts green, goes to red
-                    if (progress < 50) barColor = 'bg-yellow-500';
-                    if (progress < 20) barColor = 'bg-red-500';
+                let phase = 1;
+                if (timeLeft <= 0) phase = 3;
+                else if (progress >= 90) phase = 2;
+
+                 useEffect(() => {
+                    if (phase === 3) setBgImage(THEME_BACKGROUNDS.dragon_phase3);
+                    else if (phase === 2) setBgImage(THEME_BACKGROUNDS.dragon_phase2);
+                    else setBgImage(THEME_BACKGROUNDS.dragon_phase1);
+                }, [phase]);
+
+                if (phase === 3) {
+                    return (
+                        <div className="flex flex-col items-center justify-center text-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                            <h1 className="text-6xl md:text-8xl text-amber-400 drop-shadow-[6px_6px_0_rgba(0,0,0,1)]">VICTORY!</h1>
+                            <p className="text-xl md:text-2xl mt-6 text-white drop-shadow-[3px_3px_0_rgba(0,0,0,1)]">Time for a well-earned break.</p>
+                        </div>
+                    );
                 }
 
                 return (
-                    <div className="flex flex-col items-center gap-6" style={{ fontFamily: '"Press Start 2P", monospace' }}>
-                         {/* Health/Restore Bar Container */}
-                         <div className="w-64 md:w-96 h-8 border-4 border-white bg-gray-800 relative shadow-lg">
-                            {/* "HP" or "RP" Text Label */}
-                            <div className="absolute -left-12 top-1 text-white text-xs font-bold drop-shadow-md">
-                                {isBreak ? 'RP' : 'HP'}
-                            </div>
-                            {/* Fill */}
-                            <div
-                                className={`h-full ${barColor} transition-all duration-1000`}
-                                style={{ width: `${progress}%` }}
-                            ></div>
-                         </div>
-                         
-                         {/* Time Text */}
-                        <div className="text-4xl md:text-5xl text-white mt-2 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-widest">
+                    <div className="w-full h-full flex flex-col justify-center items-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                        <div className="text-6xl md:text-8xl text-white drop-shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-widest">
                             {timeStr}
                         </div>
                     </div>
                 );
-            }
+            };
+            return <DragonDemiseDisplay />;
+        };
 
-            // --- DRAGON'S DEMISE STYLE ---
-            if (style === 'dragon') {
-                const HealthBar = ({ percentage, label, side }) => {
-                    const barColor = percentage > 50 ? 'bg-green-500' : percentage > 20 ? 'bg-yellow-500' : 'bg-red-500';
-                    const isRight = side === 'right';
-                    return (
-                        <div className={`w-48 md:w-64 h-6 border-2 border-white bg-gray-800 relative shadow-lg ${isRight ? 'ml-auto' : 'mr-auto'}`}>
-                            <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
-                            <div className={`absolute -top-6 text-xs uppercase tracking-widest ${isRight ? 'right-0' : 'left-0'}`}>{label}</div>
-                        </div>
-                    );
-                };
-
-                const DragonDemiseDisplay = () => {
-                    const elapsed = duration - timeLeft;
-                    const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
-
-                    let phase = 1;
-                    let heroHealth = 100;
-                    let dragonHealth = 100;
-
-                    if (timeLeft <= 0) {
-                        phase = 3; // Victory
-                        heroHealth = 10;
-                        dragonHealth = 0;
-                    } else if (progress >= 90) {
-                        phase = 2; // Counterattack
-                        heroHealth = 10;
-                        const phaseProgress = (progress - 90) / 10; // 0 to 1
-                        dragonHealth = 100 * (1 - phaseProgress);
-                    } else {
-                        phase = 1; // The Stand
-                        const phaseProgress = progress / 90; // 0 to 1
-                        heroHealth = 100 - (90 * phaseProgress);
-                    }
-                    
-                    useEffect(() => {
-                        if (phase === 3) setBgImage(THEME_BACKGROUNDS.dragon_phase3);
-                        else if (phase === 2) setBgImage(THEME_BACKGROUNDS.dragon_phase2);
-                        else setBgImage(THEME_BACKGROUNDS.dragon_phase1);
-                    }, [phase]);
-
-                    if (phase === 3) {
-                        return (
-                            <div className="flex flex-col items-center justify-center text-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
-                                <h1 className="text-6xl md:text-8xl text-amber-400 drop-shadow-[6px_6px_0_rgba(0,0,0,1)]">VICTORY!</h1>
-                                <p className="text-xl md:text-2xl mt-6 text-white drop-shadow-[3px_3px_0_rgba(0,0,0,1)]">Time for a well-earned break.</p>
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <div className="w-full h-full flex flex-col justify-between items-center" style={{ fontFamily: '"Press Start 2P", monospace' }}>
-                            <div className="w-full flex justify-between items-start px-4">
-                                <HealthBar percentage={heroHealth} label="Hero HP" side="left" />
-                                <HealthBar percentage={dragonHealth} label="Dragon HP" side="right" />
-                            </div>
-                            <div className="text-6xl md:text-8xl text-white mt-2 drop-shadow-[4px_4px_0_rgba(0,0,0,1)] tracking-widest">
-                                {timeStr}
-                            </div>
-                            <div className="h-16"></div>
-                        </div>
-                    );
-                };
-                return <DragonDemiseDisplay />;
-            }
-
-            // --- RETRO STYLE ---
-            if (style === 'retro') {
-                return (
-                    <div className="font-mono text-[6rem] md:text-[8rem] text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.6)] tabular-nums tracking-wider">
-                        {timeStr}
-                    </div>
-                );
-            }
-
-            // --- ZEN CIRCLE STYLE ---
-            if (style === 'circle') {
-                const radius = 120;
-                const circumference = 2 * Math.PI * radius;
-                const progress = timeLeft / duration;
-                const dashoffset = circumference * (1 - progress);
-                
-                return (
-                    <div className="relative flex items-center justify-center mb-8 mt-4">
-                        <svg width="320" height="320" className="transform -rotate-90">
-                            {/* Background Circle */}
-                            <circle cx="160" cy="160" r={radius} stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="transparent" />
-                            {/* Progress Circle */}
-                            <circle 
-                                cx="160" cy="160" r={radius} 
-                                stroke="white" strokeWidth="8" fill="transparent" 
-                                strokeDasharray={circumference} 
-                                strokeDashoffset={dashoffset} 
-                                className="transition-all duration-1000 ease-linear" 
-                                strokeLinecap="round" 
-                            />
-                        </svg>
-                        <div className="absolute text-5xl md:text-6xl font-light tracking-wider">{timeStr}</div>
-                    </div>
-                );
-            }
-
-            // Default: Minimal
+        // --- Health Bar Component ---
+        const HealthBar = ({ percentage, label }) => {
+            const barColor = percentage > 50 ? 'bg-green-500' : percentage > 20 ? 'bg-yellow-500' : 'bg-red-500';
             return (
-                <div className="text-[8rem] md:text-[10rem] leading-none font-thin tabular-nums tracking-tighter drop-shadow-2xl">
-                    {timeStr}
+                <div className="w-32 md:w-48 h-4 border-2 border-white bg-gray-800 relative shadow-lg mt-4">
+                    <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${percentage}%` }}></div>
+                    <div className="absolute -top-5 text-xs uppercase tracking-widest">{label}</div>
                 </div>
             );
         };
@@ -267,7 +155,7 @@
         // --- Main Component ---
         function FocusApp() {
             // --- State ---
-            const [mode, setMode] = useState('setup'); 
+            const [mode, setMode] = useState('setup');
             const [task, setTask] = useState('');
             const [duration, setDuration] = useState(25 * 60); 
             const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -279,7 +167,7 @@
             const [customMins, setCustomMins] = useState('');
 
             // Timer Design State
-            const [timerStyle, setTimerStyle] = useState('minimal'); // minimal, retro, circle, pixel, dragon
+            const [timerStyle, setTimerStyle] = useState('dragon');
             const [isBlurred, setIsBlurred] = useState(false); // New Blur State
 
             // Focus Guard State
@@ -300,18 +188,6 @@
             useEffect(() => {
                 const updateBackground = () => {
                     // 1. Check for specific style overrides first
-                    if (timerStyle === 'retro') {
-                        setBgImage(THEME_BACKGROUNDS.retro);
-                        return;
-                    }
-                    if (timerStyle === 'circle') {
-                        setBgImage(THEME_BACKGROUNDS.circle);
-                        return;
-                    }
-                    if (timerStyle === 'pixel') {
-                        setBgImage(THEME_BACKGROUNDS.pixel);
-                        return;
-                    }
                    if (timerStyle === 'dragon') {
                        setBgImage(THEME_BACKGROUNDS.dragon_initial);
                        return;
@@ -444,21 +320,29 @@
                 setWasPausedByHide(false);
             };
 
-            const cycleStyle = () => {
-                setTimerStyle(prev => {
-                    if (prev === 'minimal') return 'retro';
-                    if (prev === 'retro') return 'circle';
-                    if (prev === 'circle') return 'pixel';
-                    if (prev === 'pixel') return 'dragon';
-                    return 'minimal';
-                });
-            };
+
+            const elapsed = duration - timeLeft;
+            const progress = duration > 0 ? (elapsed / duration) * 100 : 0;
+            let heroHealth = 100;
+            let dragonHealth = 100;
+
+            if (timeLeft <= 0) {
+                heroHealth = 10;
+                dragonHealth = 0;
+            } else if (progress >= 90) {
+                heroHealth = 10;
+                const phaseProgress = (progress - 90) / 10;
+                dragonHealth = 100 * (1 - phaseProgress);
+            } else {
+                const phaseProgress = progress / 90;
+                heroHealth = 100 - (90 * phaseProgress);
+            }
 
             return (
                 <div className="relative min-h-screen w-full text-white overflow-hidden">
                     
                     {/* Background Layer (Separated for Blur Effect) */}
-                    <div 
+                    <div
                         className={`absolute inset-0 transition-all duration-1000 transform ${isBlurred ? 'blur-md scale-105' : 'blur-0 scale-100'}`}
                         style={{
                             backgroundImage: `url(${bgImage})`,
@@ -474,24 +358,27 @@
                     <div className="relative z-10 flex flex-col items-center justify-between min-h-screen p-8">
                         
                         {/* Top Bar */}
-                        <div className="w-full flex justify-between items-center">
-                        <div className="flex items-center gap-2 font-semibold tracking-widest text-sm uppercase opacity-80">
-                            <CheckCircle size={18} />
-                            <span>Focus & Flow</span>
-                        </div>
-                        
-                        {/* MyNoise Link */}
-                        <div className="flex items-center gap-4">
-                            <a 
-                                href="https://mynoise.net/NoiseMachines/rainNoiseGenerator.php" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-all text-sm font-medium border border-white/10"
-                            >
-                                <span>Open MyNoise 🌧️</span>
-                                <ExternalLink size={14} className="opacity-70" />
-                            </a>
-                        </div>
+                        <div className="w-full flex justify-between items-start">
+                            <div className="flex flex-col items-start" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                                <div className="flex items-center gap-2 font-semibold tracking-widest text-sm uppercase opacity-80">
+                                    <CheckCircle size={18} />
+                                    <span>Focus & Flow</span>
+                                </div>
+                                {timerStyle === 'dragon' && mode === 'focus' && <HealthBar percentage={heroHealth} label="Hero HP" />}
+                            </div>
+                            
+                            <div className="flex flex-col items-end" style={{ fontFamily: '"Press Start 2P", monospace' }}>
+                                <a
+                                    href="https://mynoise.net/NoiseMachines/rainNoiseGenerator.php"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-all text-sm font-medium border border-white/10"
+                                >
+                                    <span>Open MyNoise 🌧️</span>
+                                    <ExternalLink size={14} className="opacity-70" />
+                                </a>
+                                {timerStyle === 'dragon' && mode === 'focus' && <HealthBar percentage={dragonHealth} label="Dragon HP" />}
+                            </div>
                         </div>
 
                         {/* Central Content */}
@@ -542,21 +429,6 @@
                                 </div>
                             </div>
 
-                            {/* Timer Style Selection */}
-                            <div className="mt-4 flex flex-col items-center gap-3">
-                                <span className="text-xs uppercase tracking-widest opacity-50">Timer Style</span>
-                                <div className="flex gap-3">
-                                    {['minimal', 'retro', 'circle', 'pixel', 'dragon'].map(s => (
-                                    <button 
-                                        key={s} 
-                                        onClick={() => setTimerStyle(s)}
-                                        className={`px-4 py-2 rounded-full border text-sm capitalize transition-all ${timerStyle === s ? 'bg-white text-black border-white' : 'border-white/20 hover:bg-white/10'}`}
-                                    >
-                                        {s}
-                                    </button>
-                                    ))}
-                                </div>
-                            </div>
 
                             <button 
                                 onClick={handleStartFocus}
@@ -642,14 +514,6 @@
                                 <Droplet size={24} className={`opacity-70 group-hover:opacity-100 ${isBlurred ? 'fill-current' : ''}`} />
                             </button>
 
-                            {/* Style Toggle (Always visible) */}
-                            <button 
-                                onClick={cycleStyle}
-                                className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full p-4 transition-all shadow-lg hover:scale-105 border border-white/10 group"
-                                title="Change Timer Style"
-                            >
-                                <Palette size={24} className="opacity-70 group-hover:opacity-100" />
-                            </button>
                         </div>
 
                         {/* Bottom Bar (Quote) */}
