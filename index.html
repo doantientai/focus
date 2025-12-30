@@ -158,6 +158,56 @@
             );
         };
 
+        // --- Sound Utility ---
+        const playSound = (type) => {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            let duration = 2;
+            
+            if (type === 'endFocus') {
+                duration = 5;
+            }
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            switch (type) {
+                case 'click':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(800, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    break;
+                case 'startFocus':
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(261.63, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(392.00, ctx.currentTime + duration);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    break;
+                case 'startBreak':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(783.99, ctx.currentTime + duration);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    break;
+                case 'endFocus':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + duration);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                    break;
+                default:
+                    break;
+            }
+
+            osc.start();
+            osc.stop(ctx.currentTime + duration);
+        };
+
         // --- Main Component ---
         function FocusApp() {
             // --- State ---
@@ -282,6 +332,7 @@
                 setMode('focus');
                 setTimeLeft(duration);
                 setIsActive(true);
+                playSound('startFocus');
             };
 
             const handleTimerComplete = () => {
@@ -321,8 +372,10 @@
                     setMode('break');
                     setDuration(5 * 60);
                     setTimeLeft(5 * 60);
+                    playSound('endFocus');
                 } else {
                     setMode('setup');
+                    playSound('startBreak');
                 }
             };
 
@@ -442,7 +495,10 @@
 
 
                             <button 
-                                onClick={handleStartFocus}
+                                onClick={() => {
+                                    playSound('click');
+                                    handleStartFocus();
+                                }}
                                 disabled={!task}
                                 className="mt-8 group flex items-center gap-3 bg-white text-black px-8 py-4 rounded-full text-xl font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:hover:scale-100"
                             >
@@ -466,7 +522,10 @@
 
                             <div className="flex items-center gap-6 mt-12">
                                 <button 
-                                    onClick={() => setIsActive(!isActive)}
+                                    onClick={() => {
+                                        playSound('click');
+                                        setIsActive(!isActive);
+                                    }}
                                     className="p-4 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10"
                                 >
                                     {isActive ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
@@ -474,7 +533,10 @@
                                 
                                 {mode === 'focus' ? (
                                     <button 
-                                        onClick={handleTimerComplete}
+                                        onClick={() => {
+                                            playSound('click');
+                                            handleTimerComplete();
+                                        }}
                                         className="px-6 py-3 rounded-full border border-white/20 hover:bg-white/10 text-sm font-medium tracking-wide"
                                     >
                                         FINISH EARLY
@@ -482,6 +544,7 @@
                                 ) : (
                                     <button 
                                         onClick={() => {
+                                            playSound('click');
                                             setMode('setup');
                                             setIsActive(false);
                                             setTask('');
@@ -503,7 +566,10 @@
                                     <h2 className="text-2xl font-bold mb-2">Distraction Detected!</h2>
                                     <p className="opacity-80 mb-6">You left the focus window. The timer was paused to help you stay disciplined.</p>
                                     <button 
-                                        onClick={handleResume}
+                                        onClick={() => {
+                                            playSound('click');
+                                            handleResume();
+                                        }}
                                         className="bg-white text-black px-8 py-3 rounded-full font-medium hover:scale-105 transition-transform"
                                     >
                                         Resume Session
@@ -518,7 +584,10 @@
                         <div className="absolute bottom-8 right-8 z-40 flex gap-4">
                             {/* Blur Toggle (Always visible) */}
                             <button 
-                                onClick={() => setIsBlurred(!isBlurred)}
+                                onClick={() => {
+                                    playSound('click');
+                                    setIsBlurred(!isBlurred)
+                                }}
                                 className={`bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full p-4 transition-all shadow-lg hover:scale-105 border border-white/10 group ${isBlurred ? 'bg-white/30 border-white' : ''}`}
                                 title="Toggle Blur"
                             >
